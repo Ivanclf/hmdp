@@ -17,43 +17,14 @@ import java.util.concurrent.TimeUnit;
 import static net.sf.jsqlparser.util.validation.metadata.NamedObject.user;
 
 public class LoginInterceptor implements HandlerInterceptor {
-    private StringRedisTemplate stringRedisTemplate;
-
-    public LoginInterceptor(StringRedisTemplate stringRedisTemplate) {
-        this.stringRedisTemplate = stringRedisTemplate;
-    }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-
-
-
-        // 获取用户
-        // HttpSession session = request.getSession();
-        // Object user = session.getAttribute("user");
-
-        String token = request.getHeader("authorization");
-        String key = RedisConstants.LOGIN_USER_KEY + token;
-        if(StrUtil.isBlank(token)) {
+        // 判断ThreadLocal中是否有用户
+        if(UserHolder.getUser() == null) {
             response.setStatus(401);
             return false;
         }
-
-        Map<Object, Object> userMap = stringRedisTemplate.opsForHash().entries(key);
-
-        if(userMap.isEmpty()) {
-            response.setStatus(401);
-            return false;
-        }
-        // 查询到的Hash数据转为UserDTO对象
-        UserDTO userDTO = BeanUtil.fillBeanWithMap(userMap, new UserDTO(), false);
-
-        // 存在则保存用户信息到ThreadLocal
-        UserHolder.saveUser(userDTO);
-
-        // 刷新有效期
-        stringRedisTemplate.expire(key, RedisConstants.CACHE_SHOP_TTL, TimeUnit.MINUTES);
-
         return true;
     }
 
