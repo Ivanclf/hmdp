@@ -4,7 +4,6 @@ import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import com.hmdp.entity.Shop;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -66,13 +65,13 @@ public class CacheClient {
     public <R, ID> R queryWithLogicalExpire(String keyPrefix, ID id, Class<R> type, Function<ID, R> dbFallBack, Long time, TimeUnit unit) {
         String key = CACHE_SHOP_KEY + id;
         // 查询商铺缓存
-        String shopJson = stringRedisTemplate.opsForValue().get(key);
+        String json = stringRedisTemplate.opsForValue().get(key);
         // 存在，直接返回
-        if(StrUtil.isBlank(shopJson)) {
-            return null;
+        if(StrUtil.isBlank(json)) {
+            return JSONUtil.toBean(json, type);
         }
         // 若命中，则先将json反序列化为对象，判断其是否过期
-        RedisData redisData = JSONUtil.toBean(shopJson, RedisData.class);
+        RedisData redisData = JSONUtil.toBean(json, RedisData.class);
         R r = JSONUtil.toBean((JSONObject) redisData.getData(), type);
         LocalDateTime expireTime = redisData.getExpireTime();
         if(expireTime.isAfter(LocalDateTime.now())) {
@@ -83,11 +82,11 @@ public class CacheClient {
         boolean isLock = tryLock(lockKey);
         if(isLock) {
             // Double Check
-            shopJson = stringRedisTemplate.opsForValue().get(key);
-            if(StrUtil.isBlank(shopJson)) {
+            json = stringRedisTemplate.opsForValue().get(key);
+            if(StrUtil.isBlank(json)) {
                 return null;
             }
-            redisData = JSONUtil.toBean(shopJson, RedisData.class);
+            redisData = JSONUtil.toBean(json, RedisData.class);
             r = JSONUtil.toBean((JSONObject) redisData.getData(), type);
             expireTime = redisData.getExpireTime();
             if(expireTime.isAfter(LocalDateTime.now())) {
