@@ -10,8 +10,8 @@ import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 public class SimpleRedisLock implements ILock{
-    private String name;
-    private StringRedisTemplate stringRedisTemplate;
+    private final String name;
+    private final StringRedisTemplate stringRedisTemplate;
     private static final String KEY_PREFIX = "lock:";
     private static final String ID_PREFIX = UUID.randomUUID().toString(true) + "-";
     private static final DefaultRedisScript<Long> UNLOCK_SCRIPT;
