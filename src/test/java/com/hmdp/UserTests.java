@@ -6,6 +6,7 @@ import com.hmdp.entity.User;
 import com.hmdp.service.IUserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.connection.stream.ReadOffset;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import javax.annotation.Resource;
@@ -127,5 +128,10 @@ class UserTests {
         }
         
         System.out.println("用户删除完成");
+    }
+
+    @Test
+    void createGroup() {
+        stringRedisTemplate.opsForStream().createGroup("stream.orders", ReadOffset.from("0"), "g1");
     }
 }
