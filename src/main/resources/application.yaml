@@ -11,7 +11,7 @@ spring:
   redis:
     host: 47.111.127.92
     port: 6379
-    password:
+    password: 7EkMFaiYbTtSwZ7d
     database: 0
     lettuce:
       pool:
